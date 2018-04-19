@@ -47,7 +47,7 @@ Set-TargetResource is the 'make it so' portion of a DSC resource.  If your machi
   You should see the following commands:
     
 
-      PS C:\Users\willa\Documents\GitHub\AltairAutomation> Get-Command -Module xDSCResourceDesigner
+      PS C:\Users\willa\Documents\GitHub\> Get-Command -Module xDSCResourceDesigner
 
       CommandType     Name                                               Version    Source
       -----------     ----                                               -------    ------
@@ -67,17 +67,36 @@ Set-TargetResource is the 'make it so' portion of a DSC resource.  If your machi
   
   ```
 - Execute the Command.
-- Verify the return
+- Verify the return:
+
+  ```
+    PS C:\Users\willa\Documents\GitHub\> New-Item -Name 'NO_SMS_ON_DRIVE.sms' -Path C:\ -ItemType File
+
+
+    Directory: C:\
+
+
+    Mode                LastWriteTime         Length Name
+    ----                -------------         ------ ----
+    -a----        4/19/2018  11:14 AM              0 NO_SMS_ON_DRIVE.sms
+  ```
+
+- Generalize the command by creating a variable called $Disk.  Replace the value 'C:\' with $Disk.
+  ```powershell
+    
+    $Disk = 'C:\'
+    New-Item -Name 'NO_SMS_ON_DRIVE.sms' -Path $Disk -ItemType File  
+  
+  ```
+- Execute the command.  Note the error returned.
 
 ```
-  PS C:\Users\willa\Documents\GitHub\AltairAutomation> New-Item -Name 'NO_SMS_ON_DRIVE.sms' -Path C:\ -ItemType File
-
-
-  Directory: C:\
-
-
-  Mode                LastWriteTime         Length Name
-  ----                -------------         ------ ----
-  -a----        4/19/2018  11:14 AM              0 NO_SMS_ON_DRIVE.sms
+  PS C:\Users\willa\Documents\GitHub\> $Disk = 'c:\'
+  PS C:\Users\willa\Documents\GitHub\> New-Item -Name 'NO_SMS_ON_DRIVE.sms' -Path $Disk -ItemType File
+  New-Item : The file 'C:\NO_SMS_ON_DRIVE.sms' already exists.
+  At line:1 char:1
+  + New-Item -Name 'NO_SMS_ON_DRIVE.sms' -Path $Disk -ItemType File
+  + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      + CategoryInfo          : WriteError: (C:\NO_SMS_ON_DRIVE.sms:String) [New-Item], IOException
+      + FullyQualifiedErrorId : NewItemIOError,Microsoft.PowerShell.Commands.NewItemCommand
 ```
-
