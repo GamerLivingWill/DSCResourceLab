@@ -3,6 +3,9 @@ A walkthrough of how to create your own DSC resources.
 
 # Lab Setup
 Have Visual Studio Code installed.  It's free!
+  - https://code.visualstudio.com/download
+Install the PowerShell add-on for VSCode.  Also free!
+  - https://github.com/PowerShell/vscode-powershell
 
 # Understanding the Three Constructs
 
@@ -22,4 +25,19 @@ Set-TargetResource is the 'make it so' portion of a DSC resource.  If your machi
 
 # Lab - Download the xDSCResourceDesigner Module
   - Open up your Visual Studio Code instance.  
-  - 
+  - Run the following:
+    ```powershell
+    
+      Find-Module xDSCResourceDesigner | Install-Module
+    
+    ```
+  You may be prompted to install a NuGet package provider and install the package.  Select Yes to both.
+  
+  - Run the following:
+  ```powershell
+  
+    Import-Module xDSCResourceDesigner
+    Get-Command xDSCResourceDesigner
+  
+  ```
+  
