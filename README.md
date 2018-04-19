@@ -34,10 +34,25 @@ Set-TargetResource is the 'make it so' portion of a DSC resource.  If your machi
   You may be prompted to install a NuGet package provider and install the package.  Select Yes to both.
   
   - Run the following:
-  ```powershell
+    ```powershell
   
-    Import-Module xDSCResourceDesigner
-    Get-Command xDSCResourceDesigner
+      Import-Module xDSCResourceDesigner
+      Get-Command -Module xDSCResourceDesigner
   
-  ```
+    ```
+  You should see the following commands:
+    
+    ```powershell
   
+      PS C:\Users\willa\Documents\GitHub\AltairAutomation> Get-Command -Module xDSCResourceDesigner
+
+      CommandType     Name                                               Version    Source
+      -----------     ----                                               -------    ------
+      Function        Import-xDscSchema                                  1.9.0.0    xDSCResourceDesigner
+      Function        New-xDscResource                                   1.9.0.0    xDSCResourceDesigner
+      Function        New-xDscResourceProperty                           1.9.0.0    xDSCResourceDesigner
+      Function        Test-xDscResource                                  1.9.0.0    xDSCResourceDesigner
+      Function        Test-xDscSchema                                    1.9.0.0    xDSCResourceDesigner
+      Function        Update-xDscResource                                1.9.0.0    xDSCResourceDesigner
+  
+    ```
