@@ -23,7 +23,11 @@ Test-TargetResource validates whether or not your target is in its desired state
 
 Set-TargetResource is the 'make it so' portion of a DSC resource.  If your machine is not in its desired state, this is the code that will fix that.
 
-# Lab - Download the xDSCResourceDesigner Module
+# Lab Scenario
+
+  You are an administrator for a company that is implementing System Center Configuration Manager.  On the distribution point servers, a file called NO_SMS_ON_DRIVE.sms must exist on drives that you do not wish to have SCCM packages installed on.  You must create a DSC resource that will create the files on all of the drives, except the ones you specify not to.
+
+## Lab A - Download the xDSCResourceDesigner Module
   - Open up your Visual Studio Code instance.  
   - Run the following:
     ```powershell
@@ -42,8 +46,7 @@ Set-TargetResource is the 'make it so' portion of a DSC resource.  If your machi
     ```
   You should see the following commands:
     
-    ```powershell
-  
+
       PS C:\Users\willa\Documents\GitHub\AltairAutomation> Get-Command -Module xDSCResourceDesigner
 
       CommandType     Name                                               Version    Source
@@ -55,4 +58,26 @@ Set-TargetResource is the 'make it so' portion of a DSC resource.  If your machi
       Function        Test-xDscSchema                                    1.9.0.0    xDSCResourceDesigner
       Function        Update-xDscResource                                1.9.0.0    xDSCResourceDesigner
   
-    ```
+## Lab B - Write a command to create a NO_SMS_ON_DRIVE.sms file.
+
+- Write the following command to understand what is needed to create the NO_SMS_ON_DRIVE.sms file:
+  ```powershell
+    
+    New-Item -Name 'NO_SMS_ON_DRIVE.sms' -Path C:\ -ItemType File  
+  
+  ```
+- Execute the Command.
+- Verify the return
+
+```
+  PS C:\Users\willa\Documents\GitHub\AltairAutomation> New-Item -Name 'NO_SMS_ON_DRIVE.sms' -Path C:\ -ItemType File
+
+
+  Directory: C:\
+
+
+  Mode                LastWriteTime         Length Name
+  ----                -------------         ------ ----
+  -a----        4/19/2018  11:14 AM              0 NO_SMS_ON_DRIVE.sms
+```
+
