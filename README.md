@@ -58,7 +58,7 @@ Set-TargetResource is the 'make it so' portion of a DSC resource.  If your machi
       Function        Test-xDscSchema                                    1.9.0.0    xDSCResourceDesigner
       Function        Update-xDscResource                                1.9.0.0    xDSCResourceDesigner
   
-## Lab B - Write a command to create a NO_SMS_ON_DRIVE.sms file.
+## Lab B - Write a command to create a NO_SMS_ON_DRIVE.sms file and validate it exists.
 
 - Write the following command to understand what is needed to create the NO_SMS_ON_DRIVE.sms file:
   ```powershell
@@ -100,3 +100,34 @@ Set-TargetResource is the 'make it so' portion of a DSC resource.  If your machi
       + CategoryInfo          : WriteError: (C:\NO_SMS_ON_DRIVE.sms:String) [New-Item], IOException
       + FullyQualifiedErrorId : NewItemIOError,Microsoft.PowerShell.Commands.NewItemCommand
 ```
+
+***The purpose of this exercise is to check against expected behaviours and see if errors are thrown.  If the given command throws an exception, it can cause your DSC resource to fail.  You can take care of these errors with alternate commands as checks, or a Try/Catch statement.
+
+We will use our parameter and the file name to validate if the file exists or not with the Get-Item command and return a true or false statement.  In this instance, since we are building our test, we will use an if statement to validate that the file exists.
+
+***Using an if statement
+```powershell
+
+  If (Get-Item -Path ($Drive + 'NO_SMS_ON_DRIVE.sms')){
+
+    return $true
+
+  }
+  Else{
+
+    return $false
+
+  }
+
+```
+
+If you run this statement when the file exists, it will return true.  If you delete the file and run the statement, it will return false.
+
+Now we have a command to create the file, and we have script block to test that the file exists.  We will now create the DSC resource.
+
+## Lab C - Create a DSC Resource with xDSCResourceDesigner.
+
+DSC Resource Designer was created to make it easy for you to build the file templates and directory structure in the manner that DSC needs to be able to read it.  In order to create the 
+
+
+
