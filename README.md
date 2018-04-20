@@ -149,6 +149,114 @@ Now that we have our DSC Resource properties, we can add them to a new DSC Resou
 New-xDscResource -Name NoSMSOnDrive -Property $Drive,$Ensure -Path 'C:\Program Files\WindowsPowerShell\Modules' -ModuleName DSCLab -Verbose
 
 ```
-Now highlight the variable property lines and the New-xDscResource line and press F8 to execute.
+Now highlight the variable property lines and the New-xDscResource line and press F8 to execute.  Once the resource directories and files have been created, open the NoSMSOnDrive.psm1 file in C:\Program Files\WindowsPowerShell\Modules\DSCLab\DSCResources\NoSMSOnDrive.
+
+The xDSCResourceDesigner creates a templated file for you to use.  All you have to do is modify your code and put it in the appropriate blocks.  We'll start with Get-TargetResource
+
+## Lab D - Get-TargetResource
+
+Get-TargetResource only has to validate that your input is what is expected.  This must be outputted in a hashtable, which has been created for you.  All you have to do is remove the comment block (<# and #>) surrounding the returnvalue hashtable and output like so:
+
+```powershell
+
+    function Get-TargetResource
+    {
+        [CmdletBinding()]
+        [OutputType([System.Collections.Hashtable])]
+        param
+        (
+            [parameter(Mandatory = $true)]
+            [System.String]
+            $Drive
+        )
+
+        #Write-Verbose "Use this cmdlet to deliver information about command processing."
+
+        #Write-Debug "Use this cmdlet to write debug information while troubleshooting."
 
 
+
+        $returnValue = @{
+        Drive = [System.String]
+        Ensure = [System.String]
+        }
+
+        $returnValue
+
+    }
+
+```
+
+Next, we'll skip past the Set-TargetResource and move to the Test-TargetResource block.
+
+## Lab E - Test-TargetResource
+
+Test-TargetResource must return a single true or false statement, like we created before.  It is important to remember that if you're dealing with an array of values, it still must return a single true or false statement.  For simplicity and time, we are dealing with a singular value.
+
+All input parameters must be used in the Test-TargetResource block.  This includes Ensure.  We must accomodate for that in our code.  You can do so with the following example:
+```powershell
+
+    If($Ensure -eq $null){
+
+      $Ensure = 'Present'
+
+    }
+
+```
+
+Remove the following comment block:
+```powershell
+
+    <#
+    $result = [System.Boolean]
+    
+    $result
+    #>
+
+```
+
+And replace it with your true/false statement that you created earlier.  We must ammend our if statement to include the Ensure parameter.  See the example below:
+
+```powershell
+
+    function Test-TargetResource
+    {
+        [CmdletBinding()]
+        [OutputType([System.Boolean])]
+        param
+        (
+            [parameter(Mandatory = $true)]
+            [System.String]
+            $Drive,
+
+            [ValidateSet("Present","Absent")]
+            [System.String]
+            $Ensure
+        )
+
+        #Write-Verbose "Use this cmdlet to deliver information about command processing."
+
+        #Write-Debug "Use this cmdlet to write debug information while troubleshooting."
+
+
+        If($Ensure -eq $null){
+
+            $Ensure = 'Present'
+
+        }
+
+        If (Get-Item -Path ($Drive + 'NO_SMS_ON_DRIVE.sms') -and $Ensure -eq 'Present'){
+
+            return $true
+
+          }
+          Else{
+
+            return $false
+
+          }
+    }
+
+```
+
+## Lab F - Set-TargetResource
