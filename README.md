@@ -25,7 +25,7 @@ Set-TargetResource is the 'make it so' portion of a DSC resource.  If your machi
 
 # Lab Scenario
 
-  You are an administrator for a company that is implementing System Center Configuration Manager.  On the distribution point servers, a file called NO_SMS_ON_DRIVE.sms must exist on drives that you do not wish to have SCCM packages installed on.  You must create a DSC resource that will create the files on all of the drives, except the ones you specify not to.
+  You are an administrator for a company that is implementing System Center Configuration Manager.  On the distribution point servers, a file called NO_SMS_ON_DRIVE.sms must exist on drives that you do not wish to have SCCM packages installed on.  You must create a DSC resource that will create the file on the drives that you wish to exclude from SCCM.
 
 ## Lab A - Download the xDSCResourceDesigner Module
   - Open up your Visual Studio Code instance.  
@@ -101,11 +101,11 @@ Set-TargetResource is the 'make it so' portion of a DSC resource.  If your machi
       + FullyQualifiedErrorId : NewItemIOError,Microsoft.PowerShell.Commands.NewItemCommand
 ```
 
-***The purpose of this exercise is to check against expected behaviours and see if errors are thrown.  If the given command throws an exception, it can cause your DSC resource to fail.  You can take care of these errors with alternate commands as checks, or a Try/Catch statement.
+*** The purpose of this exercise is to check against expected behaviours and see if errors are thrown.  If the given command throws an exception, it can cause your DSC resource to fail.  You can take care of these errors with alternate commands as checks, or a Try/Catch statement.
 
 We will use our parameter and the file name to validate if the file exists or not with the Get-Item command and return a true or false statement.  In this instance, since we are building our test, we will use an if statement to validate that the file exists.
 
-***Using an if statement
+*** Using an if statement
 ```powershell
 
   If (Get-Item -Path ($Drive + 'NO_SMS_ON_DRIVE.sms')){
@@ -127,7 +127,28 @@ Now we have a command to create the file, and we have script block to test that 
 
 ## Lab C - Create a DSC Resource with xDSCResourceDesigner.
 
-DSC Resource Designer was created to make it easy for you to build the file templates and directory structure in the manner that DSC needs to be able to read it.  In order to create the 
+DSC Resource Designer was created to make it easy for you to build the file templates and directory structure in the manner that DSC needs to be able to read it.  In order to create the DSC resource, we first need to create the properties that will be our input parameters - Drive, and Ensure.  This will require the xDSCResourceProperty
 
+*** While added as a standard, Ensure is not always used.  We will add it at this time for a later module.
+
+```powershell
+
+    $Drive = New-xDscResourceProperty -Name Drive -Type String -Attribute Key
+    $Ensure = New-xDscResourceProperty -Name Ensure -ValidateSet 'Present','Absent' -Type String -Attribute Write
+
+```
+
+*** Key attributes are attributes that must be unique in use.  This prevents you from using the same DSC resource on the same object and causing conflicts.  For example having one resource ensure that the file exists, and a second resource that ensures that it's absent inside of the same configuration.  Every DSC resource must have at least one Key property.
+
+*** For more information including the use of the Write, Read, and Required attributes, you can go here.
+https://docs.microsoft.com/en-us/powershell/dsc/authoringresourcemof
+
+Now that we have our DSC Resource properties, we can add them to a new DSC Resource with the New-xDscResource command.
+```powershell
+
+New-xDscResource -Name NoSMSOnDrive -Property $Drive,$Ensure -Path 'C:\Program Files\WindowsPowerShell\Modules' -ModuleName DSCLab -Verbose
+
+```
+Now highlight the variable property lines and the New-xDscResource line and press F8 to execute.
 
 
