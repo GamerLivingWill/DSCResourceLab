@@ -103,12 +103,12 @@ Set-TargetResource is the 'make it so' portion of a DSC resource.  If your machi
 
 *** The purpose of this exercise is to check against expected behaviours and see if errors are thrown.  If the given command throws an exception, it can cause your DSC resource to fail.  You can take care of these errors with alternate commands as checks, or a Try/Catch statement.
 
-We will use our parameter and the file name to validate if the file exists or not with the Get-Item command and return a true or false statement.  In this instance, since we are building our test, we will use an if statement to validate that the file exists.
+We will use our parameter and the file name to validate if the file exists or not with the Test-Path command and return a true or false statement.  In this instance, since we are building our test, we will use an if statement to validate that the file exists.
 
-*** Using an if statement
+*** Using an if statement - even if your original command returns a true/false statement, it's always a good idea to wrap this in an if in the event that you intend on adding more to the statement later, as we will be.
 ```powershell
 
-  If (Get-Item -Path ($Drive + 'NO_SMS_ON_DRIVE.sms')){
+  If ((Test-Path -Path ($Drive + 'NO_SMS_ON_DRIVE.sms')) -eq $true){
 
     return $true
 
@@ -191,16 +191,18 @@ Next, we'll skip past the Set-TargetResource and move to the Test-TargetResource
 
 ## Lab E - Test-TargetResource
 
+Test-TargetResource can be the most difficult of the blocks to write, as you must accomodate for all of the intended outcomes.  These outcomes, as you test them, can often change how you plan on executing your Set block, which is why we do this before we build the Set-TargetResource.
+
 Test-TargetResource must return a single true or false statement, like we created before.  It is important to remember that if you're dealing with an array of values, it still must return a single true or false statement.  For simplicity and time, we are dealing with a singular value.
 
 All input parameters must be used in the Test-TargetResource block.  This includes Ensure.  We must accomodate for that in our code.  You can do so with the following example:
 ```powershell
 
-    If($Ensure -eq $null){
+      If($Ensure -ne 'Present' -or $Ensure -ne 'Absent'){
 
-      $Ensure = 'Present'
+          $_Ensure = 'Present'
 
-    }
+      }
 
 ```
 
@@ -239,13 +241,13 @@ And replace it with your true/false statement that you created earlier.  We must
         #Write-Debug "Use this cmdlet to write debug information while troubleshooting."
 
 
-        If($Ensure -eq $null){
+        If($Ensure -ne 'Present' -or $Ensure -ne 'Absent'){
 
-            $Ensure = 'Present'
+            $_Ensure = 'Present'
 
         }
 
-        If (Get-Item -Path ($Drive + 'NO_SMS_ON_DRIVE.sms') -and $Ensure -eq 'Present'){
+        If ((Test-Path ($Drive + 'NO_SMS_ON_DRIVE.sms')) -eq $true -and $_Ensure -eq 'Present'){
 
             return $true
 
@@ -260,3 +262,155 @@ And replace it with your true/false statement that you created earlier.  We must
 ```
 
 ## Lab F - Set-TargetResource
+
+Finally, the 'make it so' portion of our resource.  In this lab, we've already validated in the Test-TargetResource whether or not the file exists.  If it returns False, then DSC will execute Set-TargetResource.  In our case, it will be a very simple command.
+
+```powershell
+
+     function Set-TargetResource
+    {
+        [CmdletBinding()]
+        param
+        (
+            [parameter(Mandatory = $true)]
+            [System.String]
+            $Drive,
+
+            [ValidateSet("Present","Absent")]
+            [System.String]
+            $Ensure
+        )
+
+        #Write-Verbose "Use this cmdlet to deliver information about command processing."
+
+        #Write-Debug "Use this cmdlet to write debug information while troubleshooting."
+
+        New-Item -Name 'NO_SMS_ON_DRIVE.sms' -Path $Drive -ItemType File
+
+        #Include this line if the resource requires a system reboot.
+        #$global:DSCMachineStatus = 1
+
+
+    }
+
+```
+
+For now, we're not doing anything with the Ensure parameter in the Set block.  That will come later.
+
+Save your file.  It's now time to test our resource and build a test configuration.
+
+#Lab G - Test and Build
+
+After you've saved the file, let's import the DSC resource module:
+```powershell
+
+  Import-Module DSCLab
+
+```
+
+Next, let's display the DSC Resource:
+
+```powershell
+
+    Get-DscResource NoSMSOnDrive -Syntax
+    
+    NoSMSOnDrive [String] #ResourceName
+    {
+        Drive = [string]
+        [DependsOn = [string[]]]
+        [Ensure = [string]{ Absent | Present }]
+        [PsDscRunAsCredential = [PSCredential]]
+    }
+
+```
+
+If you are able to display the DSC Resource provider like above, you have successfully created your very own DSC resource.  Now let's build a configuration with only our required Key parameter.
+
+```powershell
+
+    Configuration TestNoSMS{
+
+      Import-DscResource -ModuleName DSCLab -ModuleVersion '1.0'
+
+      Node LocalHost{
+
+        NoSMSOnDrive CDrive
+        {
+            Drive = "C:\"
+        }
+
+      }
+
+    }
+
+```
+
+Highlight the Configuration and press F8 to commit it to memory.  Once complete, run TestNoSMS in the command pane.  You should get the following return:
+
+```powershell
+
+    PS C:\Users\willa\Documents\GitHub> TestNoSMS
+
+
+        Directory: C:\Users\willa\Documents\GitHub\TestNoSMS
+
+
+    Mode                LastWriteTime         Length Name
+    ----                -------------         ------ ----
+    -a----        4/20/2018   8:03 PM           1736 LocalHost.mof
+
+
+PS C:\Users\willa\Documents\GitHub>
+
+```
+
+Now, we can run our configuration:
+
+```powershell
+
+  Start-DscConfiguration -Path .\TestNoSMS -ComputerName LocalHost -Wait -Force -Verbose
+
+```
+
+You will get an output similar to this:
+```powershell
+
+    PS C:\Users\willa\Documents\GitHub> Start-DscConfiguration -Path .\TestNoSMS -ComputerName LocalHost -Wait -Force -Verbose
+    VERBOSE: Perform operation 'Invoke CimMethod' with following parameters, ''methodName' = SendConfigurationApply,'className' = MSFT_DSCLocalConfigurationManager,'namespaceName' = root/Microsoft/Windows/DesiredStateConfiguration'.
+    VERBOSE: An LCM method call arrived from computer DESKTOP-049IE09 with user sid S-1-5-21-578112834-513646827-2495815797-1001.
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ Start  Set      ]
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ Start  Resource ]  [[NoSMSOnDrive]CDrive]
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ Start  Test     ]  [[NoSMSOnDrive]CDrive]
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ End    Test     ]  [[NoSMSOnDrive]CDrive]  in 0.2180 seconds.
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ Skip   Set      ]  [[NoSMSOnDrive]CDrive]
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ End    Resource ]  [[NoSMSOnDrive]CDrive]
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ End    Set      ]
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ End    Set      ]    in  0.5760 seconds.
+    VERBOSE: Operation 'Invoke CimMethod' complete.
+    VERBOSE: Time taken for configuration job to complete is 0.721 seconds  
+
+```
+
+Now the file already exists.  So it just goes through and never executes our Set- block.  So let's delete the NO_SMS_ON_Drive.sms file, and run the configuration again.
+
+```powershell
+
+    PS C:\Users\willa\Documents\GitHub> Start-DscConfiguration -Path .\TestNoSMS -ComputerName LocalHost -Wait -Force -Verbose
+    VERBOSE: Perform operation 'Invoke CimMethod' with following parameters, ''methodName' = SendConfigurationApply,'className' = MSFT_DSCLocalConfigurationManager,'namespaceName' = root/Microsoft/Windows/DesiredStateConfiguration'.
+    VERBOSE: An LCM method call arrived from computer DESKTOP-049IE09 with user sid S-1-5-21-578112834-513646827-2495815797-1001.
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ Start  Set      ]
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ Start  Resource ]  [[NoSMSOnDrive]CDrive]
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ Start  Test     ]  [[NoSMSOnDrive]CDrive]
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ End    Test     ]  [[NoSMSOnDrive]CDrive]  in 0.1170 seconds.
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ Start  Set      ]  [[NoSMSOnDrive]CDrive]
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ End    Set      ]  [[NoSMSOnDrive]CDrive]  in 0.0080 seconds.
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ End    Resource ]  [[NoSMSOnDrive]CDrive]
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ End    Set      ]
+    VERBOSE: [DESKTOP-049IE09]: LCM:  [ End    Set      ]    in  0.6160 seconds.
+    VERBOSE: Operation 'Invoke CimMethod' complete.
+    VERBOSE: Time taken for configuration job to complete is 0.774 seconds
+
+```
+
+You can see in the first run, that Skip Set was called, while in the second run Start Set was called.  Now if you check your C:\ directory, you should see a new NO_SMS_ON_DRIVE.sms file.
+
