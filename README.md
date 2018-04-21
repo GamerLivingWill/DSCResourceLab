@@ -299,7 +299,7 @@ For now, we're not doing anything with the Ensure parameter in the Set block.  T
 
 Save your file.  It's now time to test our resource and build a test configuration.
 
-#Lab G - Test and Build
+## Lab G - Test and Build
 
 After you've saved the file, let's import the DSC resource module:
 ```powershell
@@ -414,3 +414,10 @@ Now the file already exists.  So it just goes through and never executes our Set
 
 You can see in the first run, that Skip Set was called, while in the second run Start Set was called.  Now if you check your C:\ directory, you should see a new NO_SMS_ON_DRIVE.sms file.
 
+## Lab H - Bonus Round!
+
+Now that you've created your first DSC resource, update the resource to leverage the Ensure parameter.  Perform the following:
+
+  - Create logic for Ensure
+    - If ensure is Present, the file should exist.
+    - If ensure is Absent, the file should be removed.
